@@ -2,6 +2,8 @@
 // Social platforms (Instagram/TikTok) often gate content behind login — we treat
 // whatever we get as helpful context, never the only source of truth.
 
+import { isAllowed } from './robots.js';
+
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
 // Social platforms hand a browser User-Agent a JavaScript shell with nothing in
@@ -86,11 +88,24 @@ function hasUsableText({ title, description, pageText }) {
 }
 
 export async function fetchMeta(url) {
-  const result = { url, platform: detectPlatform(url), title: null, description: null, image: null, pageText: null, fetched: false, usable: false };
+  const result = {
+    url, platform: detectPlatform(url), title: null, description: null, image: null,
+    pageText: null, fetched: false, usable: false, robotsBlocked: false,
+  };
   try {
     const parsed = new URL(url);
     if (!['http:', 'https:'].includes(parsed.protocol) || isBlockedHost(parsed.hostname)) return result;
   } catch {
+    return result;
+  }
+
+  // Ask before knocking. Instagram's robots.txt disallows every unlisted agent
+  // from every path, so the right move is to not request the page at all and
+  // let the user supply the caption or a screenshot instead.
+  const { allowed, rule } = await isAllowed(url);
+  if (!allowed) {
+    result.robotsBlocked = true;
+    result.robotsRule = rule;
     return result;
   }
   const readWith = async (ua) => {

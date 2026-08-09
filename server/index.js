@@ -141,8 +141,11 @@ app.post('/api/extract', async (req, res) => {
       source_platform: url ? detectPlatform(url) : (image?.data ? 'screenshot' : 'text'),
       source_type: image?.data ? 'screenshot' : url ? 'link' : 'text',
     },
-    // `usable` distinguishes "we loaded the page" from "we learned something".
-    meta: meta ? { title: meta.title, description: meta.description, image: meta.image, fetched: meta.fetched, usable: meta.usable } : null,
+    // `usable` distinguishes "we loaded the page" from "we learned something";
+    // `robotsBlocked` says we were told not to look in the first place.
+    meta: meta
+      ? { title: meta.title, description: meta.description, image: meta.image, fetched: meta.fetched, usable: meta.usable, robotsBlocked: meta.robotsBlocked }
+      : null,
     aiError: error,
   });
 });

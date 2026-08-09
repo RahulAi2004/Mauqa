@@ -103,7 +103,12 @@ export default function AddPage({ item, initial, settings, persona, prefs, onSav
       const res = await api.extract(payload);
       const d = res.draft;
       setWasExtracted(true);
-      setCaptured({ sentUrl: url || null, fetched: !!res.meta?.fetched, usable: !!res.meta?.usable });
+      setCaptured({
+        sentUrl: url || null,
+        fetched: !!res.meta?.fetched,
+        usable: !!res.meta?.usable,
+        robotsBlocked: !!res.meta?.robotsBlocked,
+      });
       setForm((f) => ({
         ...f, ...d, item_type: 'opportunity',
         deadline: d.deadline || '', deadline_time: d.deadline_time || '',
@@ -310,11 +315,17 @@ export default function AddPage({ item, initial, settings, persona, prefs, onSav
                     "not found" and concludes the extractor is broken. */}
                 {sourceIsBlind(captured || {}) && (
                   <div className="banner warn blind-src">
-                    <strong>{src.host} ne post ka text nahi diya.</strong>
+                    <strong>
+                      {captured?.robotsBlocked
+                        ? `${src.host} apps ko posts parhne nahi deta.`
+                        : `${src.host} ne post ka text nahi diya.`}
+                    </strong>
                     <span>
-                      Reels aur posts login ke peeche hote hain, isliye link se sirf itna hi mila.
-                      Poori detail ke liye <strong>caption paste karo</strong> ya <strong>screenshot share karo</strong> —
-                      dono se deadline, eligibility aur documents nikal aate hain.
+                      {captured?.robotsBlocked
+                        ? 'Unki robots.txt automated requests se mana karti hai, isliye Mauqa ne wahan request bheji hi nahi.'
+                        : 'Reels aur posts login ke peeche hote hain, isliye link se sirf itna hi mila.'}
+                      {' '}Poori detail ke liye <strong>caption paste karo</strong> ya <strong>screenshot share karo</strong> —
+                      dono tumhari apni cheez hain, aur unse deadline, eligibility aur documents nikal aate hain.
                     </span>
                     <button className="btn small" onClick={restart}>↺ Caption ya screenshot se try karo</button>
                   </div>
@@ -338,9 +349,11 @@ export default function AddPage({ item, initial, settings, persona, prefs, onSav
                   {src.level !== 'loaded' && (
                     <div className="rev-fix">
                       <span className="muted">
-                        {src.level === 'empty'
-                          ? 'The page opened but its content is gated, so nothing here is verified against a publisher.'
-                          : 'Mauqa could not open the page it was given, so nothing here is verified against a publisher.'}
+                        {src.level === 'blocked'
+                          ? 'This site refuses automated requests, so Mauqa never fetched it — nothing here is verified against a publisher.'
+                          : src.level === 'empty'
+                            ? 'The page opened but its content is gated, so nothing here is verified against a publisher.'
+                            : 'Mauqa could not open the page it was given, so nothing here is verified against a publisher.'}
                       </span>
                       <button className="btn small" onClick={findOfficialSource}>🔎 Find official source</button>
                     </div>

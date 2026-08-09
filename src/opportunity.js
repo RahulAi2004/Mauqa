@@ -75,9 +75,14 @@ export function hostOf(u) {
   try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return null; }
 }
 
-export function sourceState({ sentUrl, fetched, usable }) {
+export function sourceState({ sentUrl, fetched, usable, robotsBlocked }) {
   if (!sentUrl) return { level: 'missing', label: 'No source link — captured from text or a screenshot' };
   const host = hostOf(sentUrl);
+  // Not a failure — a choice. The site's robots.txt refuses automated requests,
+  // so Mauqa never sent one.
+  if (robotsBlocked) {
+    return { level: 'blocked', host, label: `${host} does not allow apps to read its posts — Mauqa did not fetch it` };
+  }
   // Loaded but empty is its own state: claiming the source was "reached" when the
   // page handed back a login wall is the one thing this panel must never do.
   if (fetched && !usable) {
@@ -87,10 +92,11 @@ export function sourceState({ sentUrl, fetched, usable }) {
   return { level: 'unreachable', host, label: `Could not open ${host} — it may require a login` };
 }
 
-// True when the link was fetched but gave nothing back — the case where the user
-// should be told to paste the caption or share a screenshot instead of retrying.
-export function sourceIsBlind({ sentUrl, fetched, usable } = {}) {
-  return !!sentUrl && !!fetched && !usable;
+// True when the link could not tell us anything — whether because the site
+// refuses automated requests or because the page came back empty. Either way the
+// user should be pointed at the caption or a screenshot rather than retrying.
+export function sourceIsBlind({ sentUrl, fetched, usable, robotsBlocked } = {}) {
+  return !!sentUrl && (!!robotsBlocked || (!!fetched && !usable));
 }
 
 export function applyLinkState(applyLink, { sentUrl, fetched } = {}) {
