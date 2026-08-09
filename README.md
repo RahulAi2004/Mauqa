@@ -261,10 +261,13 @@ SSRF guard on URL fetching · CSV formula-injection guard · every query scoped 
 
 | | |
 |---|---|
-| 🌐 **Deployed link** | `<!-- TODO: add deployed URL -->` |
+| 🌐 **Deployed link** | **https://mauqa.rahulkumar.codes** |
 | 🎥 **Demo video** | `<!-- TODO: add demo video link -->` |
 | 📊 **Presentation** | `<!-- TODO: add slide deck link -->` |
-| 💻 **Repository** | `<!-- TODO: add public repo URL -->` |
+| 💻 **Repository** | https://github.com/RahulAi2004/Mauqa |
+
+> Open it on Android Chrome and use **Add to Home screen** — the share sheet and voice
+> input only appear once it is installed from the HTTPS origin.
 
 ### Team
 
