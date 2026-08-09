@@ -1,0 +1,31 @@
+{
+  "name": "mauqa",
+  "version": "0.1.0",
+  "description": "Mauqa — Opportunity Inbox. Save reels/posts about internships, scholarships & jobs; AI turns them into action cards with deadlines and reminders.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "comment": "node:sqlite (DatabaseSync) is flag-gated before 23.4 — an older runtime fails at import, not at query time.",
+    "node": ">=23.4.0"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "cross-env API_PORT=4200 node server/index.js",
+    "dev:web": "vite",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.72.1",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^5.4.11"
+  }
+}

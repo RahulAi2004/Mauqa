@@ -1,0 +1,40 @@
+# Render blueprint — New → Blueprint → point at this repo and it reads this file.
+# Only OPENROUTER_API_KEY has to be typed in by hand.
+services:
+  - type: web
+    name: mauqa
+    runtime: node
+    plan: free
+    # --include=dev is required: vite and react live in devDependencies, and
+    # Render sets NODE_ENV=production, which makes npm skip them by default.
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/status
+    envVars:
+      # node:sqlite is flag-gated before Node 23.4, so the default runtime is not enough.
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      # Set in the Render dashboard — never commit the real key.
+      - key: OPENROUTER_API_KEY
+        sync: false
+      # Optional: the hosted .apk link. Read at BUILD time, so changing it
+      # needs a redeploy, not just a restart.
+      # - key: VITE_APK_URL
+      #   sync: false
+
+    # ---------------------------------------------------------------
+    # WARNING — storage on the free plan is EPHEMERAL.
+    # Every deploy, restart, and free-tier sleep wipes server/data/mauqa.db:
+    # all accounts, opportunities and reminders are gone. Fine for a demo where
+    # data is created live; not fine if anything must survive.
+    #
+    # Persistent storage needs a paid instance. To switch: set plan to starter
+    # and uncomment the disk below.
+    #
+    # disk:
+    #   name: mauqa-data
+    #   mountPath: /opt/render/project/src/server/data
+    #   sizeGB: 1
+    # ---------------------------------------------------------------
