@@ -78,7 +78,7 @@ app.use('/api', (req, res, next) => {
 
 const DEFAULT_PREFS = {
   theme: 'light', accent: 'violet', density: 'comfortable',
-  smart_suggestions: true, auto_extract: true,
+  smart_suggestions: true, auto_extract: true, quick_button: true,
   week_start: 0, time_24h: false, default_view: 'upcoming',
 };
 

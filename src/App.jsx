@@ -12,6 +12,7 @@ import SettingsPage from './pages/SettingsPage.jsx';
 import PremiumPage from './pages/PremiumPage.jsx';
 import DetailPage from './pages/DetailPage.jsx';
 import { AppInstallBanner } from './components/GetApp.jsx';
+import QuickButton from './components/QuickButton.jsx';
 
 // Primary navigation. Search, Analytics and Settings stay fully routable but move
 // off the main bar (topbar search / mobile 🔍 icon / user menu) so the five slots
@@ -33,6 +34,7 @@ const TITLES = {
 const DEFAULT_PREFS = {
   theme: 'light', accent: 'violet', density: 'comfortable',
   smart_suggestions: true, auto_extract: true, week_start: 0, time_24h: false, default_view: 'upcoming',
+  quick_button: true,
 };
 
 export default function App() {
@@ -322,6 +324,15 @@ export default function App() {
           </button>
         ))}
       </nav>
+
+      {prefs.quick_button !== false && (
+        <QuickButton
+          alertCount={notifications.length}
+          onCapture={goAdd}
+          onQuickAdd={() => { setPage('home'); setTimeout(() => quickRef.current?.focus(), 80); }}
+          onAlerts={() => setPage('notifications')}
+        />
+      )}
 
       {toast && <div className="toast">{toast}</div>}
     </div>

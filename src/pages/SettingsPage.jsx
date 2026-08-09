@@ -57,7 +57,7 @@ export default function SettingsPage({ user, settings, prefs, onPrefs, onSaved, 
     onToast('Profile updated ✔');
   };
 
-  const resetPrefs = () => setPref({ theme: 'light', accent: 'violet', density: 'comfortable', smart_suggestions: true, auto_extract: true, week_start: 0, time_24h: false, default_view: 'upcoming' });
+  const resetPrefs = () => setPref({ theme: 'light', accent: 'violet', density: 'comfortable', smart_suggestions: true, auto_extract: true, week_start: 0, time_24h: false, default_view: 'upcoming', quick_button: true });
 
   const testNotification = () => {
     if (!('Notification' in window)) return alert('This browser has no notification support.');
@@ -120,6 +120,17 @@ export default function SettingsPage({ user, settings, prefs, onPrefs, onSaved, 
               <div className="set-row">
                 <div className="sr-body"><strong>🤖 Auto Extract</strong><span>Use AI to extract details from links and images (falls back to basic when off or no key)</span></div>
                 <Toggle checked={prefs.auto_extract} onChange={(v) => setPref({ auto_extract: v })} />
+              </div>
+              <div className="set-row">
+                <div className="sr-body">
+                  <strong>🎯 Floating quick button</strong>
+                  <span>
+                    A draggable shortcut to Capture, quick add and Alerts. Dims while idle and
+                    lights up on touch. It floats inside Mauqa only — a web app cannot draw over
+                    other apps or read your screen.
+                  </span>
+                </div>
+                <Toggle checked={prefs.quick_button !== false} onChange={(v) => setPref({ quick_button: v })} />
               </div>
               <div className="set-row">
                 <div className="sr-body"><strong>📅 Start of Week</strong><span>First day in calendars</span></div>
