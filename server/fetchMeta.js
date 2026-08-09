@@ -6,10 +6,15 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 
 // Social platforms hand a browser User-Agent a JavaScript shell with nothing in
 // it, but still fill in Open Graph tags for link-preview crawlers. So when the
-// normal fetch comes back empty we ask a second time as a crawler. It is a
-// fallback rather than the default because plenty of ordinary sites serve
-// crawlers a thinner page than they serve a browser.
-const CRAWLER_UA = 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)';
+// normal fetch comes back empty we ask a second time announcing ourselves as a
+// preview bot. It is a fallback rather than the default because plenty of
+// ordinary sites serve crawlers a thinner page than they serve a browser.
+//
+// This says who we actually are. Borrowing facebookexternalhit would read as
+// Meta's own crawler, and a site that chose to answer it would be answering a
+// claim that isn't true. It also bought nothing: Instagram withholds reel
+// captions from every user agent, which is the case that actually matters here.
+const CRAWLER_UA = 'MauqaBot/0.1 (+https://mauqa.rahulkumar.codes; link preview for a user-saved post)';
 
 function metaContent(html, key) {
   const patterns = [
