@@ -45,3 +45,7 @@ Thumbs.db
 ehthumbs.db
 desktop.ini
 $RECYCLE.BIN/
+
+# ---- build artefacts that must not be committed ----
+public/*.apk
+public/.well-known/assetlinks.json
