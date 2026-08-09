@@ -159,6 +159,24 @@ input:focus, textarea:focus, select:focus { outline: 2px solid color-mix(in srgb
 .row3 { display: grid; grid-template-columns: 1.1fr 0.95fr 0.95fr; gap: 12px; }
 
 /* ============ quick add ============ */
+/* ============ voice input ============ */
+.mic-btn { flex: none; padding: 6px 10px; font-size: 0.95rem; line-height: 1; }
+.mic-btn.is-live {
+  background: var(--warn-soft); color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 40%, transparent);
+  animation: mic-pulse 1.4s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn) 45%, transparent); }
+  50%      { box-shadow: 0 0 0 6px transparent; }
+}
+/* Respect users who have asked the OS to stop animating things. */
+@media (prefers-reduced-motion: reduce) {
+  .mic-btn.is-live { animation: none; }
+}
+.quickadd-note { margin: 8px 0 0; font-size: 0.78rem; cursor: default; }
+.quickadd-note.error { color: var(--warn); cursor: pointer; }
+
 /* ============ Android app banner ============ */
 .apk-banner {
   display: flex; align-items: center; gap: 10px;

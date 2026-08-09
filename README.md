@@ -39,6 +39,7 @@ Everything else you need to act on lives in the same inbox: meetings, tests, ass
 | ✨ **AI capture** | Paste a link, drop a screenshot, or paste a caption. Auto-detects the input type. Powered by Gemini 3.5 Flash via OpenRouter |
 | 🛡 **Honest extraction** | Never invents a deadline or an application link. Every uncertain field is flagged before anything is saved |
 | ⚡ **Quick add** | One line of natural language — *"submit scholarship docs friday"*, *"meeting with client kal 3pm"*. Understands **English and Roman Urdu** (`kal`, `parso`, `aaj`, `har roz`, `har hafta`) |
+| 🎙 **Voice input** | Speak the line instead of typing it. The transcript lands in the quick-add bar for review — never straight into the database |
 | 🔔 **Smart reminders** | Per-type default schedules (tests: 1 week + 3 days + 1 day; meetings: 1 day + 1 hour + 15 min), overridable per item |
 | 📆 **Phone-native alarms** | `.ics` export carries each item's own alarm schedule, so your phone rings with Mauqa closed |
 | 📅 **Calendar & analytics** | Month view, agenda, completion trends, upcoming load, streaks |
@@ -246,6 +247,7 @@ SSRF guard on URL fetching · CSV formula-injection guard · every query scoped 
 - **Instagram and TikTok gate content behind login**, so link extraction on those platforms often has only Open Graph metadata. This is exactly why the screenshot path exists
 - **Source verification is not implemented yet.** Mauqa reports whether it could *load* a page — it does not verify that a domain is the official publisher. The UI never claims otherwise
 - **iOS cannot join the share sheet**, so the iPhone flow is screenshot → open Mauqa → upload
+- **Voice input is Chrome-only and needs HTTPS.** It uses the browser's own `SpeechRecognition`; Safari and Firefox report unsupported and the mic button hides itself there. Code-mixed Urdu-English transcription is unreliable, which is why the transcript is always reviewed before saving. One line at a time — dictating several tasks in one breath is not supported yet
 - **No floating overlay ("bubble") and no screen capture.** Both need native Android permissions (`SYSTEM_ALERT_WINDOW`, `MediaProjection`) that a PWA cannot request. Capture is reached through the share sheet, or by uploading a screenshot yourself
 - **No automated test suite in the repo** — testing has been script-driven against a live API
 - **Premium tier is a pricing preview.** Nothing is charged; WhatsApp reminders and push are on the roadmap
