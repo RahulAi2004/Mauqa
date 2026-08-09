@@ -4,6 +4,13 @@
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
+// Social platforms hand a browser User-Agent a JavaScript shell with nothing in
+// it, but still fill in Open Graph tags for link-preview crawlers. So when the
+// normal fetch comes back empty we ask a second time as a crawler. It is a
+// fallback rather than the default because plenty of ordinary sites serve
+// crawlers a thinner page than they serve a browser.
+const CRAWLER_UA = 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)';
+
 function metaContent(html, key) {
   const patterns = [
     new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']*)["']`, 'i'),
@@ -81,26 +88,51 @@ export async function fetchMeta(url) {
   } catch {
     return result;
   }
-  try {
+  const readWith = async (ua) => {
     const res = await fetch(url, {
-      headers: { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml' },
+      headers: { 'User-Agent': ua, Accept: 'text/html,application/xhtml+xml' },
       redirect: 'follow',
       signal: AbortSignal.timeout(9000),
     });
-    if (!res.ok) return result;
-    const type = res.headers.get('content-type') || '';
-    if (!type.includes('html')) return result;
+    if (!res.ok) return null;
+    if (!(res.headers.get('content-type') || '').includes('html')) return null;
     const html = (await res.text()).slice(0, 800_000);
-    result.title = metaContent(html, 'og:title') || metaContent(html, 'twitter:title')
-      || (html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] ?? null);
-    result.description = metaContent(html, 'og:description') || metaContent(html, 'twitter:description')
-      || metaContent(html, 'description');
-    result.image = metaContent(html, 'og:image');
-    result.pageText = visibleText(html);
+    return {
+      title: metaContent(html, 'og:title') || metaContent(html, 'twitter:title')
+        || (html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] ?? null),
+      description: metaContent(html, 'og:description') || metaContent(html, 'twitter:description')
+        || metaContent(html, 'description'),
+      image: metaContent(html, 'og:image'),
+      pageText: visibleText(html),
+    };
+  };
+
+  const apply = (read) => {
+    Object.assign(result, read);
     result.fetched = true;
     result.usable = hasUsableText(result);
+  };
+
+  try {
+    const first = await readWith(UA);
+    if (!first) return result;
+    apply(first);
   } catch {
     // Blocked, timed out, or offline — extraction continues with whatever else we have.
+    return result;
   }
+
+  // Second pass only when the first learned nothing. Worst case it also comes
+  // back empty and we keep what we already had.
+  if (!result.usable) {
+    try {
+      const second = await readWith(CRAWLER_UA);
+      if (second) {
+        const merged = { ...result, ...second };
+        if (hasUsableText(merged)) apply(second);
+      }
+    } catch { /* the browser-UA result stands */ }
+  }
+
   return result;
 }
