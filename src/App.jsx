@@ -101,7 +101,8 @@ export default function App() {
     const title = params.get('title');
     if (url || text || title) {
       const linkInText = text?.match(/https?:\/\/\S+/)?.[0];
-      setSharedDraft({ url: url || linkInText || '', text: [title, text].filter(Boolean).join('\n') });
+      // auto: the share sheet already expressed intent — Capture extracts on arrival.
+      setSharedDraft({ url: url || linkInText || '', text: [title, text].filter(Boolean).join('\n'), auto: true });
       setPage('add');
       window.history.replaceState({}, '', '/');
     } else if (params.get('quick') !== null) {

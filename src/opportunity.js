@@ -75,11 +75,22 @@ export function hostOf(u) {
   try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return null; }
 }
 
-export function sourceState({ sentUrl, fetched }) {
+export function sourceState({ sentUrl, fetched, usable }) {
   if (!sentUrl) return { level: 'missing', label: 'No source link — captured from text or a screenshot' };
   const host = hostOf(sentUrl);
+  // Loaded but empty is its own state: claiming the source was "reached" when the
+  // page handed back a login wall is the one thing this panel must never do.
+  if (fetched && !usable) {
+    return { level: 'empty', host, label: `${host} opened, but the post itself is hidden behind a login` };
+  }
   if (fetched) return { level: 'loaded', host, label: `Page loaded from ${host}` };
   return { level: 'unreachable', host, label: `Could not open ${host} — it may require a login` };
+}
+
+// True when the link was fetched but gave nothing back — the case where the user
+// should be told to paste the caption or share a screenshot instead of retrying.
+export function sourceIsBlind({ sentUrl, fetched, usable } = {}) {
+  return !!sentUrl && !!fetched && !usable;
 }
 
 export function applyLinkState(applyLink, { sentUrl, fetched } = {}) {

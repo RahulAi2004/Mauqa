@@ -60,8 +60,21 @@ function isBlockedHost(hostname) {
   return false;
 }
 
+// A page can return HTTP 200 and still contain nothing to extract from.
+// Instagram is the clearest case: a reel URL answers with a login wall whose
+// entire visible text is the word "Instagram" — 9 characters. Reporting that as
+// a successful fetch makes the UI claim it reached the source when it learned
+// nothing, so callers need to tell the two apart.
+function hasUsableText({ title, description, pageText }) {
+  const text = [description, pageText].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+  if (!text) return false;
+  // Strip the title so a page echoing only its own name doesn't count as content.
+  const beyondTitle = title ? text.split(title).join(' ').replace(/\s+/g, ' ').trim() : text;
+  return beyondTitle.length >= 40;
+}
+
 export async function fetchMeta(url) {
-  const result = { url, platform: detectPlatform(url), title: null, description: null, image: null, pageText: null, fetched: false };
+  const result = { url, platform: detectPlatform(url), title: null, description: null, image: null, pageText: null, fetched: false, usable: false };
   try {
     const parsed = new URL(url);
     if (!['http:', 'https:'].includes(parsed.protocol) || isBlockedHost(parsed.hostname)) return result;
@@ -85,6 +98,7 @@ export async function fetchMeta(url) {
     result.image = metaContent(html, 'og:image');
     result.pageText = visibleText(html);
     result.fetched = true;
+    result.usable = hasUsableText(result);
   } catch {
     // Blocked, timed out, or offline — extraction continues with whatever else we have.
   }

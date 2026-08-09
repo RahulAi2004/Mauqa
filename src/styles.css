@@ -159,6 +159,12 @@ input:focus, textarea:focus, select:focus { outline: 2px solid color-mix(in srgb
 .row3 { display: grid; grid-template-columns: 1.1fr 0.95fr 0.95fr; gap: 12px; }
 
 /* ============ quick add ============ */
+/* ============ blind source notice ============ */
+.blind-src { display: flex; flex-direction: column; gap: 7px; align-items: flex-start; padding: 12px 13px; }
+.blind-src strong { font-size: 0.88rem; }
+.blind-src span { font-weight: 400; line-height: 1.5; }
+.blind-src .btn { margin-top: 2px; }
+
 /* ============ voice input ============ */
 .mic-btn { flex: none; padding: 6px 10px; font-size: 0.95rem; line-height: 1; }
 .mic-btn.is-live {
@@ -639,6 +645,10 @@ input:focus, textarea:focus, select:focus { outline: 2px solid color-mix(in srgb
   .attn-row .btn { flex: 1; }
   .attn-title { max-width: 100%; }
   .d-dates { flex-direction: column; }
+
+  /* The Capture rail (Preview, Confidence Guide, Tip) is desk furniture: on a
+     phone it lands below Save & Track as a wall of scroll nobody reads. */
+  .addpage-grid .rail { display: none; }
 
   /* Capture + review stack on narrow screens */
   .cap-affs { grid-template-columns: 1fr; }

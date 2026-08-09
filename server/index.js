@@ -188,7 +188,8 @@ app.post('/api/extract', async (req, res) => {
       source_platform: url ? detectPlatform(url) : (image?.data ? 'screenshot' : 'text'),
       source_type: image?.data ? 'screenshot' : url ? 'link' : 'text',
     },
-    meta: meta ? { title: meta.title, description: meta.description, image: meta.image, fetched: meta.fetched } : null,
+    // `usable` distinguishes "we loaded the page" from "we learned something".
+    meta: meta ? { title: meta.title, description: meta.description, image: meta.image, fetched: meta.fetched, usable: meta.usable } : null,
     aiError: error,
   });
 });

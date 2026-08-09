@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api, TYPES, TYPE_MAP, typeColor, OFFSET_CHOICES, offsetLabel, fmtDeadline, fmtTime } from '../api.js';
-import { applyLinkState, categoryMeta, CATEGORIES, detectPayload, sourceState, trust } from '../opportunity.js';
+import { applyLinkState, categoryMeta, CATEGORIES, detectPayload, sourceIsBlind, sourceState, trust } from '../opportunity.js';
 import TrustBadge from '../components/TrustBadge.jsx';
 
 const emptyForm = {
@@ -83,6 +83,7 @@ export default function AddPage({ item, initial, settings, persona, prefs, onSav
   };
 
   const detected = detectPayload(text, image);
+  const autoRan = useRef(false);
 
   const runExtract = async () => {
     const { payload, url } = detected;
@@ -102,7 +103,7 @@ export default function AddPage({ item, initial, settings, persona, prefs, onSav
       const res = await api.extract(payload);
       const d = res.draft;
       setWasExtracted(true);
-      setCaptured({ sentUrl: url || null, fetched: !!res.meta?.fetched });
+      setCaptured({ sentUrl: url || null, fetched: !!res.meta?.fetched, usable: !!res.meta?.usable });
       setForm((f) => ({
         ...f, ...d, item_type: 'opportunity',
         deadline: d.deadline || '', deadline_time: d.deadline_time || '',
@@ -123,6 +124,16 @@ export default function AddPage({ item, initial, settings, persona, prefs, onSav
       setBusy(false);
     }
   };
+
+  // Arriving from the Android share sheet, the user has already decided — making
+  // them press Extract is a pointless second tap, so run it once on arrival.
+  // Guarded by a ref because runExtract sets state this effect must not re-fire on.
+  useEffect(() => {
+    if (editing || autoRan.current || !initial?.auto) return;
+    if (!initial.url && !initial.text) return;
+    autoRan.current = true;
+    runExtract();
+  }, [initial, editing]);
 
   // Honest helper: opens a search so the user can locate the real page. Mauqa
   // does not resolve or verify it — whatever they paste is theirs, not ours.
@@ -294,6 +305,21 @@ export default function AddPage({ item, initial, settings, persona, prefs, onSav
                 })()}
                 {aiNote && <p className="banner warn">{aiNote}</p>}
 
+                {/* The single most common dead end: a social link that loads but
+                    hides its caption. Say so before the user reads a card full of
+                    "not found" and concludes the extractor is broken. */}
+                {sourceIsBlind(captured || {}) && (
+                  <div className="banner warn blind-src">
+                    <strong>{src.host} ne post ka text nahi diya.</strong>
+                    <span>
+                      Reels aur posts login ke peeche hote hain, isliye link se sirf itna hi mila.
+                      Poori detail ke liye <strong>caption paste karo</strong> ya <strong>screenshot share karo</strong> —
+                      dono se deadline, eligibility aur documents nikal aate hain.
+                    </span>
+                    <button className="btn small" onClick={restart}>↺ Caption ya screenshot se try karo</button>
+                  </div>
+                )}
+
                 <div className="rev-list">
                   <ReviewRow label="Title" value={form.title} badge={<ConfBadge level={confLevel('title')} />} missingText="No title found" />
                   <ReviewRow label="Organization" value={form.organization} badge={<ConfBadge level={confLevel('organization')} />} missingText="Not stated" />
@@ -311,7 +337,11 @@ export default function AddPage({ item, initial, settings, persona, prefs, onSav
                   </div>
                   {src.level !== 'loaded' && (
                     <div className="rev-fix">
-                      <span className="muted">Mauqa could not open the page it was given, so nothing here is verified against a publisher.</span>
+                      <span className="muted">
+                        {src.level === 'empty'
+                          ? 'The page opened but its content is gated, so nothing here is verified against a publisher.'
+                          : 'Mauqa could not open the page it was given, so nothing here is verified against a publisher.'}
+                      </span>
                       <button className="btn small" onClick={findOfficialSource}>🔎 Find official source</button>
                     </div>
                   )}
